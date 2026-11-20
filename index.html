@@ -22,7 +22,7 @@ const games=[
 {id:'forest',name:'Floresta Mágica',cat:'Aventura',tags:['Exploração','Coleta'],desc:'Explore uma floresta encantada cheia de surpresas.',file:['floresta-magica.html'],emoji:'🌳',c1:'#a5e6b4',c2:'#168b67'},
 {id:'pirates',name:'Piratas e Moedas',cat:'Lógica',tags:['Moedas','Desafio'],desc:'Aventure-se em busca de moedas e tesouros.',file:['piratas-moedas.html'],emoji:'🏴‍☠️',c1:'#ffd18a',c2:'#e47c44'},
 {id:'space',name:'Missão Espacial',cat:'Lógica',tags:['Espaço','Cristais'],desc:'Viaje pelo espaço e colete cristais.',file:['espaco-moedas.html'],emoji:'🚀',c1:'#9c4fff',c2:'#2853a7'},
-{id:'sweets',name:'Reino dos Doces',cat:'Lógica',tags:['Coleta','Labirinto'],desc:'Passe por um mundo colorido e reúna guloseimas.',file:['doce-moedas.html'],emoji:'🍭',c1:'#ffb8dd',c2:'#c44f9b'},
+{id:'sweets',name:'Reino dos Doces',cat:'Lógica',tags:['Coleta','Labirinto'],desc:'Passe por um mundo colorido e reúna guloseimas.',file:['doces-moedas.html'],emoji:'🍭',c1:'#ffb8dd',c2:'#c44f9b'},
 {id:'dino',name:'Vale dos Dinossauros',cat:'Aventura',tags:['Dinossauros','Exploração'],desc:'Explore um vale pré-histórico e encontre dinossauros.',file:['dinossauros.html'],emoji:'🦖',c1:'#a9e6a6',c2:'#4b985d'},
 {id:'city',name:'Cidade Futurista',cat:'Lógica',tags:['Cidade','Desafio'],desc:'Explore uma cidade tecnológica e resolva desafios.',file:['cidade-futurista.html'],emoji:'🏙️',c1:'#9ad7ff',c2:'#5274d5'},
 {id:'compute70',name:'Execute o Código — 70 Fases',cat:'Programação',tags:['Setas','Sequência'],desc:'Observe o caminho e organize os comandos para avançar.',file:['compute_70_fases.html'],emoji:'🧩',c1:'#9edfff',c2:'#28a9a8'},
@@ -33,12 +33,12 @@ const games=[
 {id:'penguin',name:'Pinguim — Aventura',cat:'Animais',tags:['Pinguim','Gelo'],desc:'Desafios no mundo gelado com um pinguim.',file:['pinguim-aventura.html'],emoji:'🐧',c1:'#b8e9ff',c2:'#538bc6'},
 {id:'turtle',name:'Tartaruga — Aventura',cat:'Animais',tags:['Tartaruga','Praia'],desc:'Ajude a tartaruga a explorar a praia e o mar.',file:['tartaruga-aventura.html'],emoji:'🐢',c1:'#a7e7c1',c2:'#32a58b'},
 {id:'catcode',name:'Gato — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Monte comandos para guiar o gato no cenário.',file:['gato_coding_isometrico.html'],emoji:'🐟',c1:'#a5d9ff',c2:'#5779e8'},
-{id:'dogcode',name:'Cachorro — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Organize os blocos e ajude o cão a alcançar o objetivo.',file:['cachorro_coding_isométrico.html'],emoji:'🦴',c1:'#f7d5a2',c2:'#d28c48'},
+{id:'dogcode',name:'Cachorro — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Organize os blocos e ajude o cão a alcançar o objetivo.',file:['cachorro_coding_isometrico.html'],emoji:'🦴',c1:'#f7d5a2',c2:'#d28c48'},
 {id:'rabbitcode',name:'Coelho — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Programe o caminho do coelho para recolher cenouras.',file:['coelho_coding_isometrico.html'],emoji:'🥕',c1:'#bceca8',c2:'#4b9e65'},
 {id:'foxcode',name:'Raposa — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Planeje comandos para a raposa atravessar a floresta.',file:['raposa_coding_isometrico.html'],emoji:'🍎',c1:'#ffc98c',c2:'#dc7541'},
-{id:'penguincode',name:'Pinguim — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Monte a sequência de comandos no cenário de gelo.',file:['pinguim_coding_isométrico.html'],emoji:'🐠',c1:'#a6e6ff',c2:'#4689d2'},
+{id:'penguincode',name:'Pinguim — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Monte a sequência de comandos no cenário de gelo.',file:['pinguim_coding_isometrico.html'],emoji:'🐠',c1:'#a6e6ff',c2:'#4689d2'},
 {id:'turtlecode',name:'Tartaruga — Programação Isométrica',cat:'Programação',tags:['Programação','Isométrico'],desc:'Programe a tartaruga para cruzar a praia e pegar itens.',file:['tartaruga_coding_isometrico.html'],emoji:'🐚',c1:'#b6edc6',c2:'#3b9b86'},
-{id:'classic',name:'Aventura — Jogo Clássico',cat:'Aventura',tags:['Aventura','Arcade'],desc:'Mais uma aventura para testar suas habilidades!',file:['aventura.html'],emoji:'🎮',c1:'#c8d7ff',c2:'#6679d9'}
+{id:'classic',name:'Aventura — Jogo Clássico',cat:'Aventura',tags:['Aventura','Arcade'],desc:'Mais uma aventura para testar suas habilidades!',file:['aventura-robot.html'],emoji:'🎮',c1:'#c8d7ff',c2:'#6679d9'}
 ];
 const imgBase='arcade_imagens_21/imagens/';
 const grid=document.getElementById('grid');const search=document.getElementById('search');let active='Todos';const storageKey='arcadeRoboticaJogados_v3';let played=new Set();try{played=new Set(JSON.parse(localStorage.getItem(storageKey)||'[]'))}catch(e){}
