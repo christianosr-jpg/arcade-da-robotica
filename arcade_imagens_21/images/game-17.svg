@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd3e7"/><stop offset="1" stop-color="#e17caf"/></linearGradient></defs>
+    <rect width="480" height="270" fill="url(#bg)"/>
+    <circle cx="390" cy="48" r="34" fill="#fff7bd" opacity=".9"/>
+    <g fill="#fff" opacity=".72"><ellipse cx="88" cy="55" rx="42" ry="20"/><ellipse cx="116" cy="47" rx="30" ry="25"/><ellipse cx="139" cy="58" rx="34" ry="18"/></g>
+    <path d="M0 190 Q85 130 180 180 T360 166 T480 176 V270 H0Z" fill="#ffffff" opacity=".22"/>
+    <path d="M0 228 Q115 185 210 220 T480 214 V270 H0Z" fill="#1c6040" opacity=".35"/>
+    <path d="M0 244 L480 244 L480 270 L0 270Z" fill="#ffffff" opacity=".12"/>
+    <g font-family="system-ui,Apple Color Emoji,Segoe UI Emoji" text-anchor="middle">
+      <text x="240" y="166" font-size="112" filter="drop-shadow(0 8px 4px #0003)">🐇</text>
+      <text x="372" y="200" font-size="46">🥕</text>
+    </g>
+    <g fill="#ffffff" opacity=".25"><circle cx="34" cy="211" r="9"/><circle cx="64" cy="239" r="6"/><circle cx="430" cy="235" r="8"/><circle cx="456" cy="205" r="5"/></g>
+    </svg>
