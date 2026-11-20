@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tartaruga Pé na Areia</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Arial;background:#18465a;color:#fff;min-height:100vh}
+header{text-align:center;padding:16px 12px 8px}h1{margin:0;font-size:clamp(24px,4vw,38px)}header p{margin:6px auto 0;max-width:720px;color:#e6efff}
+main{max-width:1050px;margin:auto;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px}
+.card{background:#0c132755;border:1px solid #ffffff25;border-radius:18px;padding:14px;box-shadow:0 10px 30px #0002}
+.hud{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}.pill{background:#ffffff1a;border-radius:30px;padding:7px 12px;font-weight:750}
+canvas{display:block;width:100%;height:auto;border-radius:14px;margin-top:10px;border:2px solid #ffffff25;background:#68b9c7;image-rendering:auto}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:0;border-radius:11px;background:#ffdc73;color:#19212a;padding:10px 14px;font-weight:800;cursor:pointer}button.secondary{background:#ffffff18;color:white;border:1px solid #ffffff22}
+#message{min-height:40px;text-align:center;font-weight:800;padding:8px 0}.phasegrid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:340px;overflow:auto;margin-top:10px}
+.phase{padding:6px 0;font-size:12px;border-radius:7px;background:#ffffff18;color:#fff;box-shadow:none}.phase.current{background:#ffdc73;color:#18202b}.phase.locked{opacity:.32}
+.help{font-size:14px;color:#e3eaff;line-height:1.5}footer{text-align:center;color:#c7d7e8;padding:10px;font-size:12px}
+@media(max-width:780px){main{grid-template-columns:1fr}.phasegrid{grid-template-columns:repeat(10,1fr)}}
+</style></head><body>
+<header><h1>Tartaruga Pé na Areia</h1><p>A tartuguinha passeia na praia, encontra conchas e chega ao mar!</p></header>
+<main><section class="card">
+<div class="hud"><span class="pill">Fase <b id="lvl">1</b>/100</span><span class="pill">🐚 <b id="count">0</b>/<b id="need">1</b></span><span class="pill">🏆 <b id="score">0</b></span></div>
+<canvas id="game" width="900" height="520" aria-label="Jogo de aventura com plataforma"></canvas>
+<div id="message">Use as setas para andar e espaço para pular. Pegue os itens e chegue ao objetivo!</div>
+<div class="actions"><button onclick="startLevel()">↻ Reiniciar fase</button><button class="secondary" onclick="pauseToggle()">⏸ Pausar</button><button class="secondary" onclick="goNext()" id="nextBtn">⏭ Próxima fase</button></div>
+<p class="help"><b>Controles:</b> ← → movimentam • ↑ também pode pular • Espaço pula. Colete os itens necessários e alcance o objetivo. Cuidado com os obstáculos! Use Reiniciar fase para tentar novamente.</p>
+</section><aside class="card"><h2 style="margin:0">🗺️ Fases</h2><p class="help">Complete uma fase para desbloquear a próxima. Cada etapa fica um pouco mais desafiadora.</p><div class="phasegrid" id="phasegrid"></div></aside></main><footer>Praia das Conchas • Jogo educativo e de aventura • Funciona offline</footer>
+<script>
+const CFG={hero:"🐢",item:"🐚",goal:"🌊",obstacle:"🪨",accent:"#ffdc73",sky:"#68b9c7",ground:"#b78c58",platform:"#e0b878"};
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
+const W=canvas.width,H=canvas.height,groundY=466;
+let level=1,score=0,unlocked=1,paused=false,won=false,frame=0;
+let hero={x:65,y:groundY-40,vx:0,vy:0,w:38,h:38,onGround:false};
+let platforms=[],collectibles=[],hazards=[],goal={x:820,y:groundY-55};
+let keys={},required=1,got=0;
+const phasegrid=document.getElementById("phasegrid");
+function initPhaseButtons(){for(let i=1;i<=100;i++){let b=document.createElement("button");b.textContent=i;b.className="phase"+(i===1?" current":" locked");b.id="phase"+i;b.onclick=()=>{if(i<=unlocked){level=i;startLevel()}};phasegrid.appendChild(b)}}
+function makeLevel(){
+ let diff=Math.floor((level-1)/10),gapCount=2+Math.min(4,diff),platformCount=3+Math.min(5,diff);
+ required=Math.min(1+Math.floor((level-1)/14),5);got=0;won=false;
+ hero={x:62,y:groundY-42,vx:0,vy:0,w:38,h:38,onGround:false};
+ platforms=[];collectibles=[];hazards=[];
+ // upper platforms at varied but reachable heights
+ for(let i=0;i<platformCount;i++){
+   let px=130+i*(680/platformCount), py=groundY-95-(i%3)*70- Math.min(diff*5,35);
+   platforms.push({x:px,y:py,w:105+(i%2)*20,h:16});
+ }
+ // items distributed across platforms/ground in safe spots
+ for(let i=0;i<required;i++){
+  let p=platforms[i%platforms.length];
+  collectibles.push({x:p.x+25+(i*11)%45,y:p.y-30,got:false});
+ }
+ // obstacles on floor but avoid start and goal
+ let hazardCount=Math.min(1+Math.floor(level/12),5);
+ for(let i=0;i<hazardCount;i++){let hx=270+i*105+(level%7)*4;hazards.push({x:hx,y:groundY-30,w:32,h:30,phase:i*1.4})}
+ goal={x:820,y:groundY-52,w:42,h:50};
+}
+function startLevel(){paused=false;document.getElementById("message").textContent="Colete "+required+" "+CFG.item+" e alcance "+CFG.goal+"!";makeLevel();updateHUD();render()}
+function updateHUD(){document.getElementById("lvl").textContent=level;document.getElementById("count").textContent=got;document.getElementById("need").textContent=required;document.getElementById("score").textContent=score;for(let i=1;i<=100;i++){let b=document.getElementById("phase"+i);b.className="phase"+(i===level?" current":i<=unlocked?"":" locked")}}
+function pauseToggle(){paused=!paused;document.getElementById("message").textContent=paused?"Jogo pausado. Clique Pausar para continuar.":"Vamos continuar!";render()}
+function goNext(){if(won&&level<100){level++;startLevel()}else if(level===100&&won){document.getElementById("message").textContent="🏆 Você venceu todas as 100 fases!";}}
+function jump(){if(hero.onGround){hero.vy=-12.2;hero.onGround=false}}
+document.addEventListener("keydown",e=>{keys[e.key]=true;if(["ArrowLeft","ArrowRight","ArrowUp"," ","Space"].includes(e.key))e.preventDefault();if(e.key==="ArrowUp"||e.key===" "||e.key==="Space")jump()});
+document.addEventListener("keyup",e=>keys[e.key]=false);
+function collision(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function tick(){
+ if(paused||won)return;frame++;
+ hero.vx=0;if(keys.ArrowLeft)hero.vx=-4.5;if(keys.ArrowRight)hero.vx=4.5;
+ hero.x+=hero.vx;hero.x=Math.max(0,Math.min(W-hero.w,hero.x));
+ hero.vy+=0.58;hero.y+=hero.vy;hero.onGround=false;
+ if(hero.y+hero.h>=groundY){hero.y=groundY-hero.h;hero.vy=0;hero.onGround=true}
+ for(let p of platforms){let wasBottom=hero.y+hero.h-hero.vy; if(hero.vy>=0&&wasBottom<=p.y&&hero.y+hero.h>=p.y&&hero.x+hero.w>p.x&&hero.x<p.x+p.w){hero.y=p.y-hero.h;hero.vy=0;hero.onGround=true}}
+ for(let c of collectibles){if(!c.got&&Math.abs(hero.x+hero.w/2-c.x)<26&&Math.abs(hero.y+hero.h/2-c.y)<30){c.got=true;got++;score+=100;document.getElementById("message").textContent="✨ Item coletado! "+got+"/"+required;}}
+ for(let h of hazards){let hb={x:h.x,y:h.y,w:h.w,h:h.h};if(collision(hero,hb)){hero.x=62;hero.y=groundY-hero.h;hero.vy=0;got=0;collectibles.forEach(c=>c.got=false);document.getElementById("message").textContent="Ops! Bateu em um obstáculo. Tente novamente!";}}
+ if(collision(hero,goal)){if(got>=required){won=true;score+=250;unlocked=Math.max(unlocked,level+1);document.getElementById("message").textContent="🎉 Fase concluída! +250 pontos. Próxima fase desbloqueada!";}else{document.getElementById("message").textContent="Ainda faltam itens! "+got+"/"+required;hero.x=Math.min(hero.x,goal.x-45)}}
+ updateHUD();
+}
+function drawBackground(){
+ ctx.fillStyle=CFG.sky;ctx.fillRect(0,0,W,H);
+ // decorative clouds/bubbles based on theme
+ ctx.globalAlpha=.16;ctx.fillStyle="#fff";
+ for(let i=0;i<8;i++){let cx=(i*137+frame*.18)%950,cy=35+(i*49)%180;ctx.beginPath();ctx.arc(cx,cy,22,0,Math.PI*2);ctx.arc(cx+25,cy+5,28,0,Math.PI*2);ctx.arc(cx+48,cy,20,0,Math.PI*2);ctx.fill()}
+ ctx.globalAlpha=1;
+ // ground
+ ctx.fillStyle=CFG.ground;ctx.fillRect(0,groundY,W,H-groundY);
+ ctx.fillStyle=CFG.accent;ctx.fillRect(0,groundY,W,8);
+ // background little decor
+ for(let i=0;i<16;i++){ctx.globalAlpha=.24;ctx.font="25px serif";ctx.fillText(CFG.obstacle,(i*59+13)%W,groundY-18);ctx.globalAlpha=1}
+}
+function render(){
+ drawBackground();
+ // platforms
+ for(let p of platforms){ctx.fillStyle=CFG.platform;roundRect(p.x,p.y,p.w,p.h,6);ctx.fillStyle="#ffffff30";ctx.fillRect(p.x+4,p.y+3,p.w-8,3)}
+ // collectibles
+ for(let c of collectibles){if(!c.got){ctx.font="30px serif";ctx.fillText(CFG.item,c.x-15,c.y+10);}}
+ // hazards
+ for(let h of hazards){ctx.font="32px serif";ctx.fillText(CFG.obstacle,h.x-5,h.y+28)}
+ // goal
+ ctx.font="46px serif";ctx.fillText(CFG.goal,goal.x,goal.y+40);
+ // character bounce animation
+ let bounce=hero.onGround?Math.sin(frame*.15)*2:0;ctx.font="38px serif";ctx.fillText(CFG.hero,hero.x,hero.y+hero.h+bounce);
+ // simple direction shadow
+ ctx.fillStyle="#0002";ctx.beginPath();ctx.ellipse(hero.x+hero.w/2,groundY+2,22,5,0,0,Math.PI*2);ctx.fill();
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill()}
+function loop(){tick();render();requestAnimationFrame(loop)}
+initPhaseButtons();startLevel();loop();
+</script></body></html>

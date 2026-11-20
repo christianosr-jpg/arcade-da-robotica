@@ -1,0 +1,19 @@
+ARCADE DA ROBÓTICA — SITE DE JOGOS
+
+O pacote contém um site inicial (index.html) e 20 jogos HTML offline dentro da pasta games/.
+
+COMO USAR LOCALMENTE:
+1. Extraia o ZIP inteiro mantendo a pasta games ao lado do index.html.
+2. Abra index.html no navegador (Chrome recomendado).
+3. Clique em Jogar para abrir qualquer jogo.
+4. Use o botão ☆ Marcar para registrar que já jogou. O progresso fica salvo no navegador/dispositivo.
+
+COMO PUBLICAR ONLINE (exemplo com GitHub Pages):
+1. Crie uma conta ou entre em https://github.com
+2. Crie um repositório novo, por exemplo arcade-robotica.
+3. Envie todos os arquivos e pastas desta coleção (index.html e games/), mantendo a estrutura.
+4. No repositório, abra Settings > Pages.
+5. Em Build and deployment, escolha Deploy from a branch; selecione a branch main e a pasta / (root); salve.
+6. Aguarde a publicação e use o endereço Pages indicado pelo GitHub.
+
+Nota: não foi publicado automaticamente em servidor externo, pois isso requer acesso/conta de hospedagem. O pacote está preparado para upload.

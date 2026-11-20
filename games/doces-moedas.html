@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🍭 Reino dos Doces — 100 fases</title>
+<style>
+:root{--bg:#582448;--panel:#32152a;--accent:#ff80bc;--gold:#ffdd65}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0%,#ff80bc55,transparent 45%),var(--bg);color:#f7f8ff;font-family:system-ui,Segoe UI,Arial,sans-serif;min-height:100vh}
+header{text-align:center;padding:18px 12px 8px}h1{font-size:clamp(25px,4vw,42px);margin:0;text-shadow:0 4px 0 #0003}header p{margin:8px auto;color:#d6e2f3;max-width:750px}
+.wrap{max-width:1100px;margin:0 auto;padding:12px;display:grid;grid-template-columns:minmax(300px,1.15fr) minmax(280px,.85fr);gap:16px}
+.card{background:var(--panel);border:1px solid #ffffff24;border-radius:22px;padding:16px;box-shadow:0 15px 40px #0003}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.pill{background:#ffffff14;padding:7px 12px;border-radius:99px;font-weight:700}
+#board{display:grid;gap:5px;margin:14px auto;width:min(100%,530px);aspect-ratio:1;touch-action:manipulation}
+.cell{border-radius:9px;display:grid;place-items:center;font-size:clamp(16px,3.3vw,32px);background:#ffffff13;position:relative;box-shadow:inset 0 0 0 1px #ffffff0b}
+.cell.wall{background:#0004;box-shadow:inset 0 0 0 2px #ffffff18}
+.cell.path{background:#ffffff0a}
+.cell.goal{background:var(--accent);color:#10202b}
+.cell.coin{background:#ffcc4d24}
+.cell.player{outline:3px solid #fff;outline-offset:-4px;z-index:1}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+button{border:0;border-radius:12px;padding:12px 8px;font-weight:800;font-size:15px;color:#17202c;background:var(--accent);cursor:pointer;box-shadow:0 4px 0 #0003;transition:transform .08s}
+button:active{transform:translateY(2px);box-shadow:0 2px 0 #0003}
+button.secondary{background:#ffffff1a;color:#f5f7ff;box-shadow:none;border:1px solid #ffffff20}
+button.gold{background:var(--gold)}
+.program{min-height:84px;background:#080b1790;border:1px dashed #ffffff33;border-radius:14px;padding:10px;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
+.cmd{background:#fff;color:#182034;border-radius:8px;padding:5px 9px;font-size:18px;font-weight:900}
+.empty{color:#aab5ce;font-size:14px}
+.hint{color:#d3ddf0;font-size:14px;line-height:1.5}
+.levels{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:10px;max-height:190px;overflow:auto}
+.level{padding:7px 0;font-size:12px;border-radius:8px;background:#ffffff12;color:#fff;box-shadow:none}
+.level.current{background:var(--gold);color:#162033}.level.locked{opacity:.25}
+.message{min-height:42px;text-align:center;font-weight:800;padding:10px;color:#fff}
+footer{text-align:center;padding:8px;color:#c6d1e5;font-size:12px}
+@media(max-width:760px){.wrap{grid-template-columns:1fr}.controls button{padding:11px 3px;font-size:13px}.card{padding:12px}}
+</style></head>
+<body>
+<header><h1>🍭 Reino dos Doces</h1><p>Pegue as estrelas-doces e encontre o castelo de açúcar!</p></header>
+<div class="wrap"><section class="card">
+<div class="topline"><span class="pill">Fase <b id="phase">1</b> / 100</span><span class="pill">⭐ <b id="score">0</b></span><span class="pill">🪙 Moedas <b id="coinCount">0</b></span></div>
+<div id="board" aria-label="Tabuleiro"></div>
+<div class="message" id="message">Monte seu programa com as setas e aperte Executar!</div>
+<div class="controls">
+<button onclick="add('↑')" title="Avançar">⬆️</button><button onclick="add('←')" title="Virar/andar à esquerda">⬅️</button><button onclick="add('↓')" title="Andar para baixo">⬇️</button><button onclick="add('→')" title="Andar à direita">➡️</button>
+</div>
+<div class="controls"><button class="gold" onclick="run()">▶ Executar</button><button class="secondary" onclick="undo()">↩ Desfazer</button><button class="secondary" onclick="clearProgram()">🧹 Limpar</button><button class="secondary" onclick="reset()">🔄 Reiniciar</button></div>
+<div class="program" id="program"><span class="empty">Suas setas aparecerão aqui…</span></div>
+<p class="hint">Use as setas do teclado para montar a sequência. <b>Enter</b> executa, <b>Backspace</b> apaga o último comando e <b>Esc</b> limpa. Não há limite de comandos nesta versão: planeje, teste e corrija!</p>
+</section>
+<aside class="card"><div class="topline"><h2 style="margin:0">🗺️ Mapa de fases</h2><span class="pill">100 desafios</span></div><p class="hint">Cada fase aumenta um pouco a dificuldade. Planeje seu caminho e descubra uma solução!</p><div class="levels" id="levels"></div></aside></div>
+<footer>Jogo educativo offline • Pensamento computacional • Sequência, planejamento e depuração</footer>
+<script>
+const COINMODE=true, emojis={robot:"🤖",forest:"🧚",pirate:"🏴‍☠️",space:"👩‍🚀",candy:"🍬",dino:"🦖",city:"🦾"};
+const theme="candy", hero="Gigi";
+let phase=1,score=0,program=[],player={x:0,y:0},path=[],coins=[],collected=0,grid=7,obstacles=[];
+const board=document.getElementById("board"),levels=document.getElementById("levels");
+function makeLevel(n){
+ grid=Math.min(9,5+Math.floor((n-1)/16)); let start={x:0,y:grid-1},goal={x:grid-1,y:0};
+ // Guaranteed winding path, made from deterministic turns. 
+ let route=[{...start}],x=0,y=grid-1;
+ while(x<grid-1 || y>0){
+   let canR=x<grid-1, canU=y>0;
+   if(canR&&canU){if(((x+y+n)%3===0)&&route.length<grid*2){y--;route.push({x,y})}else{x++;route.push({x,y})}}
+   else if(canR){x++;route.push({x,y})}else{y--;route.push({x,y})}
+ }
+ // Add occasional detours with non-route blockers only; path is a safe route.
+ path=route; player={...start};coins=[];collected=0;obstacles=[];
+ if(COINMODE){
+   let candidates=route.slice(2,route.length-2);
+   let count=Math.min(3,Math.max(1,Math.floor(n/12)+1),candidates.length);
+   let picked=[];
+   for(let i=0;i<count;i++){let idx=Math.floor((i+1)*candidates.length/(count+1));picked.push(candidates[idx]);}
+   coins=picked.map(p=>({...p,taken:false}));
+ }
+ // sprinkle walls off route for visuals and choices
+ let routeKeys=new Set(route.map(p=>p.x+","+p.y));
+ for(let yy=0;yy<grid;yy++)for(let xx=0;xx<grid;xx++){
+   if(!routeKeys.has(xx+","+yy)&&((xx*7+yy*11+n*3)%5===0))obstacles.push({x:xx,y:yy});
+ }
+ render();updateHUD();
+}
+function render(){
+ board.style.gridTemplateColumns=`repeat(${grid},1fr)`;board.innerHTML="";
+ for(let y=0;y<grid;y++)for(let x=0;x<grid;x++){
+  let d=document.createElement("div");d.className="cell";
+  if(obstacles.some(o=>o.x===x&&o.y===y))d.classList.add("wall");
+  if(path.some(p=>p.x===x&&p.y===y))d.classList.add("path");
+  if(x===grid-1&&y===0){d.classList.add("goal");d.textContent="🏁"}
+  let c=coins.find(c=>c.x===x&&c.y===y&&!c.taken);if(c){d.classList.add("coin");d.textContent="🪙"}
+  if(player.x===x&&player.y===y){d.classList.add("player");d.textContent=emojis[theme]}
+  board.appendChild(d);
+ }
+}
+function add(cmd){if(program.length>=180)return;program.push(cmd);drawProgram();message("Comando adicionado!")}
+function undo(){program.pop();drawProgram()}
+function clearProgram(){program=[];drawProgram();message("Programa limpo.")}
+function drawProgram(){let el=document.getElementById("program");el.innerHTML=program.length?program.map(c=>`<span class="cmd">${c}</span>`).join(""):'<span class="empty">Suas setas aparecerão aqui…</span>'}
+function message(t){document.getElementById("message").textContent=t}
+function updateHUD(){document.getElementById("phase").textContent=phase;document.getElementById("score").textContent=score;document.getElementById("coinCount").textContent=collected+"/"+coins.length}
+function reset(){player={...path[0]};coins.forEach(c=>c.taken=false);collected=0;render();message("Posição reiniciada. Tente novamente!");updateHUD()}
+async function run(){
+ if(!program.length){message("Adicione comandos antes de executar.");return}
+ reset();message("Executando…");
+ for(let cmd of program){
+  let dx=cmd==="←"? -1:cmd==="→"?1:0,dy=cmd==="↑"?-1:cmd==="↓"?1:0;
+  let nx=player.x+dx,ny=player.y+dy;
+  if(nx<0||ny<0||nx>=grid||ny>=grid||obstacles.some(o=>o.x===nx&&o.y===ny)){message("💥 Obstáculo! Programa interrompido. Revise suas setas.");return}
+  player={x:nx,y:ny};let c=coins.find(c=>c.x===nx&&c.y===ny&&!c.taken);if(c){c.taken=true;collected++}
+  render();updateHUD();await new Promise(r=>setTimeout(r,180));
+  if(player.x===grid-1&&player.y===0){
+   if(COINMODE&&collected<coins.length){message(`Chegou ao portal, mas faltam moedas! ${collected}/${coins.length}.`);return}
+   score+=100+Math.max(0,100-program.length);message("🎉 Fase concluída! "+(COINMODE?"Todas as moedas coletadas!":""));updateHUD();
+   setTimeout(()=>{if(phase<100){phase++;program=[];drawProgram();makeLevel(phase);message("Nova fase! Programe o caminho.");}else message("🏆 PARABÉNS! Você concluiu as 100 fases!");},900);return;
+  }
+ }
+ message("Programa terminou, mas você não chegou ao portal. Ajuste a sequência.");
+}
+function buildLevels(){for(let i=1;i<=100;i++){let b=document.createElement("button");b.className="level"+(i===phase?" current":"");b.textContent=i;b.onclick=()=>{phase=i;program=[];drawProgram();makeLevel(i);message("Fase "+i+" carregada.")};levels.appendChild(b)}}
+document.addEventListener("keydown",e=>{
+ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();add(e.key==="ArrowUp"?"↑":e.key==="ArrowDown"?"↓":e.key==="ArrowLeft"?"←":"→")}
+ if(e.key==="Enter"){e.preventDefault();run()}if(e.key==="Backspace"){e.preventDefault();undo()}if(e.key==="Escape")clearProgram()
+});
+buildLevels();makeLevel(1);drawProgram();
+</script></body></html>
